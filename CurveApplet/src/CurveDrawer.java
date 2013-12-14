@@ -19,9 +19,9 @@ public class CurveDrawer {
 	private int blue;
 	private int darkGray;
 	private int lightGray;
-
-	private Graphics2D g2;
 	
+	private Graphics2D g2;
+
 	private static final int RADIUS = 7;
 	private static final int HALFRADIUS = 3;
 
@@ -30,8 +30,9 @@ public class CurveDrawer {
 
 
 	ArrayList<Point> controlPoints;
+	int[] binomial;
 	double t;
-	double k = .025;
+	//double k = .01;
 
 	public CurveDrawer(int width, int height){
 		this.width = width;
@@ -71,36 +72,78 @@ public class CurveDrawer {
 		g2.setColor(Color.black);
 		g2.fillOval(x,y,RADIUS,RADIUS);
 		controlPoints.add(new Point(x, y));
-		int[] f = getBinomialCoef(controlPoints.size());
-		if(controlPoints.size() >1){
-			for(int i = 0; i < controlPoints.size()-1; i++){
-				g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
-							controlPoints.get(i).y+HALFRADIUS, 
-							controlPoints.get(i+1).x+HALFRADIUS,
-							controlPoints.get(i+1).y+HALFRADIUS);
-			}
+		//int[] f = getBinomialCoef(controlPoints.size());
+
+		//draw the control point shape
+//		if(controlPoints.size() >1){
+//			for(int i = 0; i < controlPoints.size()-1; i++){
+//				g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
+//						controlPoints.get(i).y+HALFRADIUS, 
+//						controlPoints.get(i+1).x+HALFRADIUS,
+//						controlPoints.get(i+1).y+HALFRADIUS);
+//			}
+//		}
+		
+		//draw the curve affected by control points
+		if(controlPoints.size()>=2){
+			drawCurve();
 		}
 		if(controlPoints.size() == 7){
 			clear();
 		}
 	}
 
-
-	private int[] getBinomialCoef(int n){
-		int[] coefs = new int[n+1];
-
-		if(n == 1){
-			coefs[0]= 1;
-		}
-		else{
-			for(int i = 0; i<=n; i++){
-				int c = factorial(n)/(factorial(i)*(factorial(n-i)));
-				coefs[i]=c;
+	//draw curve based on control points
+	public void drawCurve(){
+		//generate formula based on controlPoints.size()
+		//binomial = getBinomialCoef(controlPoints.size());
+		double x1, y1, x2 = 0, y2 = 0;
+		x1 = controlPoints.get(0).x;
+		y1 = controlPoints.get(0).y;
+		for(t=.01;t<=1;t+=.01){
+			//reset x2,y2
+			x2 = 0;
+			y2 = 0;
+			for(int i = 0; i <= controlPoints.size()-1; i++){
+				x2 += controlPoints.get(i).x * bernstein(t, controlPoints.size()-1, i);
+				y2 += controlPoints.get(i).x * bernstein(t, controlPoints.size()-1, i);
 			}
+			//System.out.println(x2 + "," + y2);
+			g2.drawLine((int)x1,(int)y1, (int)x2, (int)y2);
+			x1 = x2;
+			y1 = y2;
+			System.out.println("From (" + (int)x1 + "," + (int)y1 + ")" + " To (" +(int) x2 + "," + (int)y2 + ")");
+			//			System.out.println("To (" +(int) x2 + "," + (int)y2 + ")");
 		}
-		return coefs;
 	}
-	
+	// calculate bernstein polynomial at position t
+	public double bernstein(double n, int exp, int i){
+		return getBinomial(exp, i) * Math.pow(n,i) * Math.pow(1-n, exp-i);
+	}
+
+	//n choose k, binomial coefficients
+	private int getBinomial(int n, int k){
+		if (k < 0)  return 0;
+		else if (k > n)  return 0;
+		else return (factorial(n) / (factorial(k) * factorial(n-k)));
+	}
+
+	//old version of calculating binomials
+//	private int[] getBinomialCoef(int n){
+//		int[] coefs = new int[n+1];
+//
+//		if(n == 1){
+//			coefs[0]= 1;
+//		}
+//		else{
+//			for(int i = 0; i<=n; i++){
+//				int c = factorial(n)/(factorial(i)*(factorial(n-i)));
+//				coefs[i]=c;
+//			}
+//		}
+//		return coefs;
+//	}
+
 	public void clear(){
 		g2.setColor(Color.white);
 		g2.fillRect(0, 0, width, height);
