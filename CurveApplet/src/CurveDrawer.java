@@ -19,7 +19,7 @@ public class CurveDrawer {
 	private int blue;
 	private int darkGray;
 	private int lightGray;
-	
+
 	private Graphics2D g2;
 
 	private static final int RADIUS = 7;
@@ -69,30 +69,44 @@ public class CurveDrawer {
 	}
 
 	public void drawPoint(int x, int y){	
-		g2.setColor(Color.black);
-		g2.fillOval(x,y,RADIUS,RADIUS);
+		clear();
 		controlPoints.add(new Point(x, y));
+		for(Point P: controlPoints){
+			g2.setColor(Color.black);
+			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
+		}
 		//int[] f = getBinomialCoef(controlPoints.size());
 
 		//draw the control point shape
-//		if(controlPoints.size() >1){
-//			for(int i = 0; i < controlPoints.size()-1; i++){
-//				g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
-//						controlPoints.get(i).y+HALFRADIUS, 
-//						controlPoints.get(i+1).x+HALFRADIUS,
-//						controlPoints.get(i+1).y+HALFRADIUS);
-//			}
-//		}
-		
+		//		if(controlPoints.size() >1){
+		//			for(int i = 0; i < controlPoints.size()-1; i++){
+		//				g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
+		//						controlPoints.get(i).y+HALFRADIUS, 
+		//						controlPoints.get(i+1).x+HALFRADIUS,
+		//						controlPoints.get(i+1).y+HALFRADIUS);
+		//			}
+		//		}
+
 		//draw the curve affected by control points
 		if(controlPoints.size()>=2){
 			drawCurve();
 		}
-		if(controlPoints.size() == 7){
-			clear();
+		if(controlPoints.size() == 10){
+			reset();
+		}
+		if(controlPoints.size() == 9){
+			drawControl();
 		}
 	}
-
+	public void drawControl(){
+		g2.setColor(Color.BLACK);
+		for(int i = 0; i<controlPoints.size()-1; i++){
+			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
+					controlPoints.get(i).y+HALFRADIUS, 
+					controlPoints.get(i+1).x+HALFRADIUS,
+					controlPoints.get(i+1).y+HALFRADIUS);
+		}
+	}
 	//draw curve based on control points
 	public void drawCurve(){
 		//generate formula based on controlPoints.size()
@@ -106,19 +120,23 @@ public class CurveDrawer {
 			y2 = 0;
 			for(int i = 0; i <= controlPoints.size()-1; i++){
 				x2 += controlPoints.get(i).x * bernstein(t, controlPoints.size()-1, i);
-				y2 += controlPoints.get(i).x * bernstein(t, controlPoints.size()-1, i);
+				y2 += controlPoints.get(i).y * bernstein(t, controlPoints.size()-1, i);
+				//				System.out.println("Bernstein x: " + bernstein(t, controlPoints.size()-1, i));
+				//				System.out.println("Bernstein y: " + bernstein(t, controlPoints.size()-1, i));
+
 			}
 			//System.out.println(x2 + "," + y2);
-			g2.drawLine((int)x1,(int)y1, (int)x2, (int)y2);
+			g2.setColor(Color.CYAN);
+			g2.drawLine((int)x1+HALFRADIUS,(int)y1+HALFRADIUS, (int)x2+HALFRADIUS, (int)y2+HALFRADIUS);
 			x1 = x2;
 			y1 = y2;
-			System.out.println("From (" + (int)x1 + "," + (int)y1 + ")" + " To (" +(int) x2 + "," + (int)y2 + ")");
+			//System.out.println("From (" + (int)x1 + "," + (int)y1 + ")" + " To (" +(int) x2 + "," + (int)y2 + ")");
 			//			System.out.println("To (" +(int) x2 + "," + (int)y2 + ")");
 		}
 	}
 	// calculate bernstein polynomial at position t
 	public double bernstein(double n, int exp, int i){
-		return getBinomial(exp, i) * Math.pow(n,i) * Math.pow(1-n, exp-i);
+		return getBinomial(exp, i) * Math.pow(1-n, exp-i) * Math.pow(n,i) ;
 	}
 
 	//n choose k, binomial coefficients
@@ -128,36 +146,23 @@ public class CurveDrawer {
 		else return (factorial(n) / (factorial(k) * factorial(n-k)));
 	}
 
+
 	//old version of calculating binomials
-//	private int[] getBinomialCoef(int n){
-//		int[] coefs = new int[n+1];
-//
-//		if(n == 1){
-//			coefs[0]= 1;
-//		}
-//		else{
-//			for(int i = 0; i<=n; i++){
-//				int c = factorial(n)/(factorial(i)*(factorial(n-i)));
-//				coefs[i]=c;
-//			}
-//		}
-//		return coefs;
-//	}
+	//	private int[] getBinomialCoef(int n){
+	//		int[] coefs = new int[n+1];
+	//
+	//		if(n == 1){
+	//			coefs[0]= 1;
+	//		}
+	//		else{
+	//			for(int i = 0; i<=n; i++){
+	//				int c = factorial(n)/(factorial(i)*(factorial(n-i)));
+	//				coefs[i]=c;
+	//			}
+	//		}
+	//		return coefs;
+	//	}
 
-	public void clear(){
-		g2.setColor(Color.white);
-		g2.fillRect(0, 0, width, height);
-		controlPoints.clear();
-	}
-
-	/**
-	 * Returns the rendered image
-	 * @return A Image representation of the currently rendered image
-	 */
-	public Image getImage()
-	{
-		return frameBuffer;
-	}
 
 	private int factorial(int n){
 		if(n == 0){
@@ -167,6 +172,24 @@ public class CurveDrawer {
 			return 1;
 		}
 		else return n * factorial(n-1);
+	}
+
+	public void reset(){
+		controlPoints.clear();
+		clear();
+	}
+	public void clear(){
+		g2.setColor(Color.white);
+		g2.fillRect(0, 0, width, height);
+	}
+
+	/**
+	 * Returns the rendered image
+	 * @return A Image representation of the currently rendered image
+	 */
+	public Image getImage()
+	{
+		return frameBuffer;
 	}
 
 	/**
