@@ -165,7 +165,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource()==clearButton){
-			drawer.clear();
+			drawer.reset();
 			repaint();
 		}
 		else if(e.getSource()==removePoints){
