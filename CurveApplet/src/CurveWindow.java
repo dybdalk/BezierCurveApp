@@ -201,7 +201,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		if(drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF) != null){
+		if(!isDrawing && drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF) != null){
 			setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		}
 		else{

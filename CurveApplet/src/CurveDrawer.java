@@ -13,14 +13,10 @@ public class CurveDrawer {
 	private int height;
 
 	private int white;
-	private int black;
-	private int green;
-	private int red;
-	private int blue;
-	private int darkGray;
-	private int lightGray;
 
 	private Graphics2D g2;
+	
+	private boolean canAddPoints;
 
 	private static final int RADIUS = 7;
 	private static final int HALFRADIUS = 3;
@@ -46,6 +42,8 @@ public class CurveDrawer {
 		white = Color.WHITE.getRGB();
 
 		g2 = frameBuffer.createGraphics();
+		
+		canAddPoints = true;
 
 		controlPoints = new ArrayList<Point>();
 	}
@@ -59,36 +57,38 @@ public class CurveDrawer {
 		}
 	}
 
-	public void drawPoint(int x, int y){	
-		clear();
-		controlPoints.add(new Point(x, y));
-//		for(Point P: controlPoints){
-//			g2.setColor(Color.black);
-//			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
-//		}
-		//int[] f = getBinomialCoef(controlPoints.size());
+	public void drawPoint(int x, int y){
+		if(canAddPoints){
+			clear();
+			controlPoints.add(new Point(x, y));
+			//		for(Point P: controlPoints){
+			//			g2.setColor(Color.black);
+			//			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
+			//		}
+			//int[] f = getBinomialCoef(controlPoints.size());
 
-		//draw the control point shape
-		//		if(controlPoints.size() >1){
-		//			for(int i = 0; i < controlPoints.size()-1; i++){
-		//				g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
-		//						controlPoints.get(i).y+HALFRADIUS, 
-		//						controlPoints.get(i+1).x+HALFRADIUS,
-		//						controlPoints.get(i+1).y+HALFRADIUS);
-		//			}
-		//		}
+			//draw the control point shape
+			//		if(controlPoints.size() >1){
+			//			for(int i = 0; i < controlPoints.size()-1; i++){
+			//				g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
+			//						controlPoints.get(i).y+HALFRADIUS, 
+			//						controlPoints.get(i+1).x+HALFRADIUS,
+			//						controlPoints.get(i+1).y+HALFRADIUS);
+			//			}
+			//		}
 
-		//draw the curve affected by control points
-		if(controlPoints.size()>=2){
-			drawCurve();
+			//draw the curve affected by control points
+			if(controlPoints.size()>=2){
+				drawCurve();
+			}
+			if(controlPoints.size() == 10){
+				canAddPoints = false;
+			}
+//			if(controlPoints.size() == 9){
+//				drawPolygon();
+//			}
+			drawAllPoints();
 		}
-		if(controlPoints.size() == 10){
-			reset();
-		}
-		if(controlPoints.size() == 9){
-			drawPolygon();
-		}
-		drawAllPoints();
 	}
 	
 	public void drawPoint(Point p){
@@ -246,6 +246,7 @@ public class CurveDrawer {
 		clear();
 		controlPoints.remove(p);
 		controlPoints.trimToSize();
+		canAddPoints = true;
 		drawAllPoints();
 		drawCurve();
 	}
