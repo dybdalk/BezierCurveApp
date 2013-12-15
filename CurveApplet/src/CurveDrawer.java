@@ -229,7 +229,7 @@ public class CurveDrawer {
 	/*
 	 * checks to see if a given mouse click was on a point or not
 	 */
-	public Point clickedPoint(int x, int y){
+	public Point checkPoint(int x, int y){
 		for(Point p : controlPoints){
 			if(distance(x,p.x,y,p.y) <= RADIUS){
 				return p;

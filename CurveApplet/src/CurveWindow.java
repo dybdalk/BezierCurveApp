@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -143,11 +144,11 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		}
 		//the point to be dragged
 		else if(!isDrawing && isEditing){
-			clicked = drawer.clickedPoint(e.getX()+XOFF, e.getY()+YOFF);
+			clicked = drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF);
 		}
 		//remove a point
 		else{
-			clicked = drawer.clickedPoint(e.getX()+XOFF, e.getY()+YOFF);
+			clicked = drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF);
 			drawer.removePoint(clicked);
 			if(hasPolygon){
 				drawer.drawPolygon();
@@ -194,14 +195,19 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 				repaint();
 			}
 		}
-		
-		
+
+
 	}
 
 	@Override
-	public void mouseMoved(MouseEvent arg0) {
-		// TODO Auto-generated method stub
+	public void mouseMoved(MouseEvent e) {
+		if(drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF) != null){
+			setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		}
+		else{
+			setCursor(Cursor.getDefaultCursor());
+		}
+	}
 }
 
 
