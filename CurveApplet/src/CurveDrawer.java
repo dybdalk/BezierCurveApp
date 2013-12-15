@@ -98,6 +98,11 @@ public class CurveDrawer {
 			drawControl();
 		}
 	}
+	
+	public void drawPoint(Point p){
+		g2.setColor(Color.black);
+		g2.fillOval(p.x,p.y,RADIUS,RADIUS);
+	}
 	public void drawControl(){
 		g2.setColor(Color.BLACK);
 		for(int i = 0; i<controlPoints.size()-1; i++){
@@ -127,6 +132,33 @@ public class CurveDrawer {
 			}
 			//System.out.println(x2 + "," + y2);
 			g2.setColor(Color.CYAN);
+			g2.drawLine((int)x1+HALFRADIUS,(int)y1+HALFRADIUS, (int)x2+HALFRADIUS, (int)y2+HALFRADIUS);
+			x1 = x2;
+			y1 = y2;
+			//System.out.println("From (" + (int)x1 + "," + (int)y1 + ")" + " To (" +(int) x2 + "," + (int)y2 + ")");
+			//			System.out.println("To (" +(int) x2 + "," + (int)y2 + ")");
+		}
+	}
+	
+	public void eraseCurve(){
+		//generate formula based on controlPoints.size()
+		//binomial = getBinomialCoef(controlPoints.size());
+		double x1, y1, x2 = 0, y2 = 0;
+		x1 = controlPoints.get(0).x;
+		y1 = controlPoints.get(0).y;
+		for(t=.01;t<=1;t+=.01){
+			//reset x2,y2
+			x2 = 0;
+			y2 = 0;
+			for(int i = 0; i <= controlPoints.size()-1; i++){
+				x2 += controlPoints.get(i).x * bernstein(t, controlPoints.size()-1, i);
+				y2 += controlPoints.get(i).y * bernstein(t, controlPoints.size()-1, i);
+				//				System.out.println("Bernstein x: " + bernstein(t, controlPoints.size()-1, i));
+				//				System.out.println("Bernstein y: " + bernstein(t, controlPoints.size()-1, i));
+
+			}
+			//System.out.println(x2 + "," + y2);
+			g2.setColor(Color.white);
 			g2.drawLine((int)x1+HALFRADIUS,(int)y1+HALFRADIUS, (int)x2+HALFRADIUS, (int)y2+HALFRADIUS);
 			x1 = x2;
 			y1 = y2;
@@ -178,9 +210,41 @@ public class CurveDrawer {
 		controlPoints.clear();
 		clear();
 	}
+	
 	public void clear(){
 		g2.setColor(Color.white);
 		g2.fillRect(0, 0, width, height);
+	}
+	
+	public Point clickedPoint(int x, int y){
+		for(Point p : controlPoints){
+			if(Math.abs(distance(x,p.x,y,p.y)) <= RADIUS){
+				return p;
+			}
+		}
+		return null;
+	}
+	
+	private double distance(int x1, int x2, int y1, int y2){
+		double result = Math.sqrt((Math.pow((x2-x1), 2)) + (Math.pow(y1-y2, 2)));
+		return result;
+	}
+	
+	public void removePoint(Point p){
+		erasePoint(p);
+		eraseCurve();
+		controlPoints.remove(p);
+		controlPoints.trimToSize();
+		drawCurve();
+	}
+	
+	public void erasePoint(Point p){
+		g2.setColor(Color.white);
+		g2.fillOval(p.x,p.y,RADIUS,RADIUS);
+	}
+	
+	public void addPoint(){
+		
 	}
 
 	/**
