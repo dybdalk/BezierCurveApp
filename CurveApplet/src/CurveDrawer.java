@@ -50,14 +50,6 @@ public class CurveDrawer {
 		controlPoints = new ArrayList<Point>();
 	}
 
-	//	 private MouseAdapter mouseListener = new MouseAdapter() {
-	//	        @Override
-	//	        public void mousePressed(MouseEvent me) {
-	//	            xClicked = me.getX();
-	//	            yClicked = me.getY();
-	//	            System.out.println("click");
-	//	        }
-	//	 }
 
 	public void drawBackground(){
 		for(int i = 0; i < width; i++){
@@ -70,10 +62,10 @@ public class CurveDrawer {
 	public void drawPoint(int x, int y){	
 		clear();
 		controlPoints.add(new Point(x, y));
-		for(Point P: controlPoints){
-			g2.setColor(Color.black);
-			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
-		}
+//		for(Point P: controlPoints){
+//			g2.setColor(Color.black);
+//			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
+//		}
 		//int[] f = getBinomialCoef(controlPoints.size());
 
 		//draw the control point shape
@@ -96,6 +88,7 @@ public class CurveDrawer {
 		if(controlPoints.size() == 9){
 			drawPolygon();
 		}
+		drawAllPoints();
 	}
 	
 	public void drawPoint(Point p){
@@ -142,15 +135,15 @@ public class CurveDrawer {
 		double x1, y1, x2 = 0, y2 = 0;
 		x1 = controlPoints.get(0).x;
 		y1 = controlPoints.get(0).y;
-		for(t=.01;t<=1;t+=.01){
+		for(double k=.01;k<=1.01;k+=.01){
 			//reset x2,y2
 			x2 = 0;
 			y2 = 0;
 			for(int i = 0; i <= controlPoints.size()-1; i++){
-				x2 += controlPoints.get(i).x * bernstein(t, controlPoints.size()-1, i);
-				y2 += controlPoints.get(i).y * bernstein(t, controlPoints.size()-1, i);
-				//				System.out.println("Bernstein x: " + bernstein(t, controlPoints.size()-1, i));
-				//				System.out.println("Bernstein y: " + bernstein(t, controlPoints.size()-1, i));
+				x2 += controlPoints.get(i).x * bernstein(k, controlPoints.size()-1, i);
+				y2 += controlPoints.get(i).y * bernstein(k, controlPoints.size()-1, i);
+				//				System.out.println("Bernstein x: " + bernstein(k, controlPoints.size()-1, i));
+				//				System.out.println("Bernstein y: " + bernstein(k, controlPoints.size()-1, i));
 
 			}
 			//System.out.println(x2 + "," + y2);
