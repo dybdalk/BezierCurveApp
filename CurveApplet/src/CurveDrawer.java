@@ -33,18 +33,17 @@ public class CurveDrawer {
 	int[] binomial;
 	double t;
 	//double k = .01;
-
+	
+	/**
+	 * draws Bezier curves
+	 * @param width the width
+	 * @param height the 
+	 */
 	public CurveDrawer(int width, int height){
 		this.width = width;
 		this.height = height;
 		frameBuffer = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
 		white = Color.WHITE.getRGB();
-		black = Color.BLACK.getRGB();
-		green = Color.GREEN.getRGB();
-		red = Color.RED.getRGB();
-		blue = Color.BLUE.getRGB();
-		darkGray = Color.DARK_GRAY.getRGB();
-		lightGray = Color.LIGHT_GRAY.getRGB();
 
 		g2 = frameBuffer.createGraphics();
 
@@ -95,7 +94,7 @@ public class CurveDrawer {
 			reset();
 		}
 		if(controlPoints.size() == 9){
-			drawControl();
+			drawPolygon();
 		}
 	}
 	
@@ -103,7 +102,16 @@ public class CurveDrawer {
 		g2.setColor(Color.black);
 		g2.fillOval(p.x,p.y,RADIUS,RADIUS);
 	}
-	public void drawControl(){
+	
+	public void drawAllPoints(){
+		for(Point P: controlPoints){
+			g2.setColor(Color.black);
+			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
+		}
+	}
+	
+	
+	public void drawPolygon(){
 		g2.setColor(Color.BLACK);
 		for(int i = 0; i<controlPoints.size()-1; i++){
 			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
@@ -112,7 +120,22 @@ public class CurveDrawer {
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}
 	}
-	//draw curve based on control points
+	
+	public void erasePolygon(){
+		g2.setColor(Color.white);
+		for(int i = 0; i<controlPoints.size()-1; i++){
+			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
+					controlPoints.get(i).y+HALFRADIUS, 
+					controlPoints.get(i+1).x+HALFRADIUS,
+					controlPoints.get(i+1).y+HALFRADIUS);
+		}
+		drawAllPoints();
+		drawCurve();
+	}
+	
+	/*
+	 * draw curve based on control points
+	 */
 	public void drawCurve(){
 		//generate formula based on controlPoints.size()
 		//binomial = getBinomialCoef(controlPoints.size());
@@ -140,38 +163,16 @@ public class CurveDrawer {
 		}
 	}
 	
-	public void eraseCurve(){
-		//generate formula based on controlPoints.size()
-		//binomial = getBinomialCoef(controlPoints.size());
-		double x1, y1, x2 = 0, y2 = 0;
-		x1 = controlPoints.get(0).x;
-		y1 = controlPoints.get(0).y;
-		for(t=.01;t<=1;t+=.01){
-			//reset x2,y2
-			x2 = 0;
-			y2 = 0;
-			for(int i = 0; i <= controlPoints.size()-1; i++){
-				x2 += controlPoints.get(i).x * bernstein(t, controlPoints.size()-1, i);
-				y2 += controlPoints.get(i).y * bernstein(t, controlPoints.size()-1, i);
-				//				System.out.println("Bernstein x: " + bernstein(t, controlPoints.size()-1, i));
-				//				System.out.println("Bernstein y: " + bernstein(t, controlPoints.size()-1, i));
-
-			}
-			//System.out.println(x2 + "," + y2);
-			g2.setColor(Color.white);
-			g2.drawLine((int)x1+HALFRADIUS,(int)y1+HALFRADIUS, (int)x2+HALFRADIUS, (int)y2+HALFRADIUS);
-			x1 = x2;
-			y1 = y2;
-			//System.out.println("From (" + (int)x1 + "," + (int)y1 + ")" + " To (" +(int) x2 + "," + (int)y2 + ")");
-			//			System.out.println("To (" +(int) x2 + "," + (int)y2 + ")");
-		}
-	}
-	// calculate bernstein polynomial at position t
+	/*
+	 * calculate bernstein polynomial at position t
+	 */
 	public double bernstein(double n, int exp, int i){
 		return getBinomial(exp, i) * Math.pow(1-n, exp-i) * Math.pow(n,i) ;
 	}
 
-	//n choose k, binomial coefficients
+	/*
+	 * n choose k, binomial coefficients
+	 */
 	private int getBinomial(int n, int k){
 		if (k < 0)  return 0;
 		else if (k > n)  return 0;
@@ -196,6 +197,9 @@ public class CurveDrawer {
 	//	}
 
 
+	/*
+	 * simple factorial function
+	 */
 	private int factorial(int n){
 		if(n == 0){
 			return 1;
@@ -206,45 +210,59 @@ public class CurveDrawer {
 		else return n * factorial(n-1);
 	}
 
+	/*
+	 * clears the screen and removes all control points
+	 */
 	public void reset(){
 		controlPoints.clear();
 		clear();
 	}
 	
+	/*
+	 * clears the screen
+	 */
 	public void clear(){
 		g2.setColor(Color.white);
 		g2.fillRect(0, 0, width, height);
 	}
 	
+	/*
+	 * checks to see if a given mouse click was on a point or not
+	 */
 	public Point clickedPoint(int x, int y){
 		for(Point p : controlPoints){
-			if(Math.abs(distance(x,p.x,y,p.y)) <= RADIUS){
+			if(distance(x,p.x,y,p.y) <= RADIUS){
 				return p;
 			}
 		}
 		return null;
 	}
 	
+	/*
+	 * distance formula
+	 */
 	private double distance(int x1, int x2, int y1, int y2){
 		double result = Math.sqrt((Math.pow((x2-x1), 2)) + (Math.pow(y1-y2, 2)));
 		return result;
 	}
 	
+	/*
+	 * removes a control point and redraws the curve
+	 */
 	public void removePoint(Point p){
-		erasePoint(p);
-		eraseCurve();
+		clear();
 		controlPoints.remove(p);
 		controlPoints.trimToSize();
+		drawAllPoints();
 		drawCurve();
 	}
 	
+	/*
+	 * erases the physical dot on the screen
+	 */
 	public void erasePoint(Point p){
 		g2.setColor(Color.white);
 		g2.fillOval(p.x,p.y,RADIUS,RADIUS);
-	}
-	
-	public void addPoint(){
-		
 	}
 
 	/**

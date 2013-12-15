@@ -19,23 +19,30 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 	private JRadioButton addPoints;
 	private JRadioButton removePoints;
 	private JRadioButton editPoints;
+	private JCheckBox drawPoly;
 	
 	private Boolean isDrawing;
 	private Boolean isEditing;
 	private Boolean isDragging;
+	private Boolean hasPolygon;
 	
 	private Point clicked;
 	
 	private int XOFF = -11;
 	private int YOFF = -34;
 
-
+	/**
+	 * the window that holds it all together
+	 * @param w width
+	 * @param h height
+	 */
 	public CurveWindow(int w, int h)
 	{
 		
 		isDrawing = true;
 		isEditing = false;
 		isDragging = false;
+		hasPolygon = false;
 		this.setPreferredSize(new Dimension(w,h));
 		
 		JPanel buttonPanel = new JPanel();
@@ -52,7 +59,10 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		editPoints = new JRadioButton("Edit point");
 		editPoints.addActionListener(this);
 		
+		drawPoly = new JCheckBox("Draw Polygon");
+		drawPoly.addActionListener(this);
 		
+		/*groups radio buttons together*/
 		ButtonGroup group = new ButtonGroup();
 	    group.add(addPoints);
 	    group.add(removePoints);
@@ -62,6 +72,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		buttonPanel.add(addPoints);
 		buttonPanel.add(removePoints);
 	    buttonPanel.add(editPoints);
+	    buttonPanel.add(drawPoly);
 		buttonPanel.setVisible(true);
 		drawer = new CurveDrawer(w,h);
 		JFrame frame = new JFrame("Curve Applet");
@@ -82,7 +93,10 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		g.drawImage(drawer.getImage(), 0, 0, null);
 	}
 	
-
+	/**
+	 * main method
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{
 		new CurveWindow(900,600);
@@ -90,65 +104,65 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-//		System.out.println("click");
-		
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+	public void mouseEntered(MouseEvent e) {		
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public void mouseDragged(MouseEvent e){
+		//changes the curve if a point is being dragged
 		if(isEditing && clicked != null){
-			drawer.eraseCurve();
-			drawer.erasePoint(clicked);
+			drawer.clear();
 			int prevX = clicked.x;
 			clicked.x = e.getX()+XOFF;
 			clicked.y = e.getY()+YOFF;
 			int newX = clicked.x;
-			System.out.println("old x: " + prevX + ", new x: " + newX);
-			drawer.drawPoint(clicked);
+			drawer.drawAllPoints();
 			drawer.drawCurve();
+			if(hasPolygon){
+				drawer.drawPolygon();
+			}
 			repaint();
 		}
 		
 	}
 	@Override
 	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
+		//draw a new point
 		if(isDrawing){
 			drawer.drawPoint(e.getX()+XOFF, e.getY()+YOFF);
+			if(hasPolygon){
+				drawer.drawPolygon();
+			}
 			repaint();
 		}
+		//the point to be dragged
 		else if(!isDrawing && isEditing){
 			clicked = drawer.clickedPoint(e.getX()+XOFF, e.getY()+YOFF);
-			if(clicked != null){
-				isDragging = true;
-				//System.out.println("dragging");
-			}
 		}
+		//remove a point
 		else{
-			Point clicked = drawer.clickedPoint(e.getX()+XOFF, e.getY()+YOFF);
+			clicked = drawer.clickedPoint(e.getX()+XOFF, e.getY()+YOFF);
 			drawer.removePoint(clicked);
+			if(hasPolygon){
+				drawer.drawPolygon();
+			}
 			repaint();
 		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		isDragging = false;
-		//System.out.println("no drag");
 	}
 
-	@Override
+	/**
+	 * handles all actions
+	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource()==clearButton){
 			drawer.clear();
@@ -167,6 +181,18 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 			isDrawing = false;
 			isEditing = true;
 			
+		}
+		else if(e.getSource()==drawPoly){
+			if(hasPolygon == true){
+				hasPolygon = false;
+				drawer.erasePolygon();
+				repaint();
+			}
+			else{
+				hasPolygon = true;
+				drawer.drawPolygon();
+				repaint();
+			}
 		}
 		
 		
