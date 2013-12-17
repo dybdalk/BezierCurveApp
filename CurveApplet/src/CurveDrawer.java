@@ -103,8 +103,8 @@ public class CurveDrawer {
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}
-		drawAllPoints();
 		drawCurve();
+		drawAllPoints();
 	}
 
 	/*
