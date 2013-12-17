@@ -15,8 +15,8 @@ public class CurveDrawer {
 	private int white;
 
 	private Graphics2D g2;
-	
-	private boolean canAddPoints;
+
+	public boolean canAddPoints;
 
 	private static final int RADIUS = 7;
 	private static final int HALFRADIUS = 3;
@@ -29,7 +29,7 @@ public class CurveDrawer {
 	int[] binomial;
 	double t;
 	//double k = .01;
-	
+
 	/**
 	 * draws Bezier curves
 	 * @param width the width
@@ -42,7 +42,7 @@ public class CurveDrawer {
 		white = Color.WHITE.getRGB();
 
 		g2 = frameBuffer.createGraphics();
-		
+
 		canAddPoints = true;
 
 		controlPoints = new ArrayList<Point>();
@@ -61,49 +61,30 @@ public class CurveDrawer {
 		if(canAddPoints){
 			clear();
 			controlPoints.add(new Point(x, y));
-			//		for(Point P: controlPoints){
-			//			g2.setColor(Color.black);
-			//			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
-			//		}
-			//int[] f = getBinomialCoef(controlPoints.size());
-
-			//draw the control point shape
-			//		if(controlPoints.size() >1){
-			//			for(int i = 0; i < controlPoints.size()-1; i++){
-			//				g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
-			//						controlPoints.get(i).y+HALFRADIUS, 
-			//						controlPoints.get(i+1).x+HALFRADIUS,
-			//						controlPoints.get(i+1).y+HALFRADIUS);
-			//			}
-			//		}
-
 			//draw the curve affected by control points
 			if(controlPoints.size()>=2){
 				drawCurve();
 			}
-			if(controlPoints.size() == 10){
+			if(controlPoints.size() == 13){
 				canAddPoints = false;
 			}
-//			if(controlPoints.size() == 9){
-//				drawPolygon();
-//			}
 			drawAllPoints();
 		}
 	}
-	
+
 	public void drawPoint(Point p){
 		g2.setColor(Color.black);
 		g2.fillOval(p.x,p.y,RADIUS,RADIUS);
 	}
-	
+
 	public void drawAllPoints(){
 		for(Point P: controlPoints){
 			g2.setColor(Color.black);
 			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
 		}
 	}
-	
-	
+
+
 	public void drawPolygon(){
 		g2.setColor(Color.BLACK);
 		for(int i = 0; i<controlPoints.size()-1; i++){
@@ -113,7 +94,7 @@ public class CurveDrawer {
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}
 	}
-	
+
 	public void erasePolygon(){
 		g2.setColor(Color.white);
 		for(int i = 0; i<controlPoints.size()-1; i++){
@@ -125,7 +106,7 @@ public class CurveDrawer {
 		drawAllPoints();
 		drawCurve();
 	}
-	
+
 	/*
 	 * draw curve based on control points
 	 */
@@ -135,7 +116,7 @@ public class CurveDrawer {
 		double x1, y1, x2 = 0, y2 = 0;
 		x1 = controlPoints.get(0).x;
 		y1 = controlPoints.get(0).y;
-		for(double k=.01;k<=1.01;k+=.01){
+		for(double k=.025;k<=1.025;k+=.025){
 			//reset x2,y2
 			x2 = 0;
 			y2 = 0;
@@ -155,7 +136,7 @@ public class CurveDrawer {
 			//			System.out.println("To (" +(int) x2 + "," + (int)y2 + ")");
 		}
 	}
-	
+
 	/*
 	 * calculate bernstein polynomial at position t
 	 */
@@ -208,9 +189,10 @@ public class CurveDrawer {
 	 */
 	public void reset(){
 		controlPoints.clear();
+		canAddPoints = true;
 		clear();
 	}
-	
+
 	/*
 	 * clears the screen
 	 */
@@ -218,7 +200,7 @@ public class CurveDrawer {
 		g2.setColor(Color.white);
 		g2.fillRect(0, 0, width, height);
 	}
-	
+
 	/*
 	 * checks to see if a given mouse click was on a point or not
 	 */
@@ -231,6 +213,7 @@ public class CurveDrawer {
 		return null;
 	}
 	
+	
 	/*
 	 * distance formula
 	 */
@@ -238,7 +221,7 @@ public class CurveDrawer {
 		double result = Math.sqrt((Math.pow((x2-x1), 2)) + (Math.pow(y1-y2, 2)));
 		return result;
 	}
-	
+
 	/*
 	 * removes a control point and redraws the curve
 	 */
@@ -250,7 +233,7 @@ public class CurveDrawer {
 		drawAllPoints();
 		drawCurve();
 	}
-	
+
 	/*
 	 * erases the physical dot on the screen
 	 */

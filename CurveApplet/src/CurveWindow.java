@@ -15,20 +15,20 @@ import javax.swing.*;
 public class CurveWindow extends JPanel implements MouseListener, MouseMotionListener, ActionListener{
 
 	private CurveDrawer drawer;
-	
+
 	private JButton clearButton;
 	private JRadioButton addPoints;
 	private JRadioButton removePoints;
 	private JRadioButton editPoints;
 	private JCheckBox drawPoly;
-	
+
 	private Boolean isDrawing;
 	private Boolean isEditing;
 	private Boolean isDragging;
 	private Boolean hasPolygon;
-	
+
 	private Point clicked;
-	
+
 	private int XOFF = -11;
 	private int YOFF = -34;
 
@@ -39,41 +39,41 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 	 */
 	public CurveWindow(int w, int h)
 	{
-		
+
 		isDrawing = true;
 		isEditing = false;
 		isDragging = false;
 		hasPolygon = false;
 		this.setPreferredSize(new Dimension(w,h));
-		
+
 		JPanel buttonPanel = new JPanel();
 		clearButton = new JButton("Clear");
 		clearButton.addActionListener(this);
-		
+
 		addPoints = new JRadioButton("Add new Point");
 		addPoints.addActionListener(this);
 		addPoints.setSelected(true);
-		
+
 		removePoints = new JRadioButton("Remove point");
 		removePoints.addActionListener(this);
-		
+
 		editPoints = new JRadioButton("Edit point");
 		editPoints.addActionListener(this);
-		
+
 		drawPoly = new JCheckBox("Draw Polygon");
 		drawPoly.addActionListener(this);
-		
+
 		/*groups radio buttons together*/
 		ButtonGroup group = new ButtonGroup();
-	    group.add(addPoints);
-	    group.add(removePoints);
-	    group.add(editPoints);
-	    
+		group.add(addPoints);
+		group.add(removePoints);
+		group.add(editPoints);
+
 		buttonPanel.add(clearButton);
 		buttonPanel.add(addPoints);
 		buttonPanel.add(removePoints);
-	    buttonPanel.add(editPoints);
-	    buttonPanel.add(drawPoly);
+		buttonPanel.add(editPoints);
+		buttonPanel.add(drawPoly);
 		buttonPanel.setVisible(true);
 		drawer = new CurveDrawer(w,h);
 		JFrame frame = new JFrame("Curve Applet");
@@ -93,7 +93,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 	{
 		g.drawImage(drawer.getImage(), 0, 0, null);
 	}
-	
+
 	/**
 	 * main method
 	 * @param args
@@ -130,12 +130,13 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 			}
 			repaint();
 		}
-		
+
 	}
 	@Override
 	public void mousePressed(MouseEvent e) {
 		//draw a new point
-		if(isDrawing){
+		//if(drawer.canAddPoints){
+		if(isDrawing && drawer.canAddPoints){
 			drawer.drawPoint(e.getX()+XOFF, e.getY()+YOFF);
 			if(hasPolygon){
 				drawer.drawPolygon();
@@ -147,7 +148,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 			clicked = drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF);
 		}
 		//remove a point
-		else{
+		else if(!isDrawing && !isEditing){
 			clicked = drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF);
 			drawer.removePoint(clicked);
 			if(hasPolygon){
@@ -155,6 +156,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 			}
 			repaint();
 		}
+		else alert();
 	}
 
 	@Override
@@ -172,7 +174,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		else if(e.getSource()==removePoints){
 			isDrawing = false;
 			isEditing = false;
-			
+
 		}
 		else if(e.getSource() == addPoints){
 			isDrawing = true;
@@ -181,7 +183,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		else if(e.getSource()==editPoints){
 			isDrawing = false;
 			isEditing = true;
-			
+
 		}
 		else if(e.getSource()==drawPoly){
 			if(hasPolygon == true){
@@ -207,6 +209,9 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		else{
 			setCursor(Cursor.getDefaultCursor());
 		}
+	}
+	public void alert(){
+		JOptionPane.showMessageDialog(null, "Too many dots! Please clear screen or remove a dot", "InfoBox: " , JOptionPane.INFORMATION_MESSAGE);
 	}
 }
 
