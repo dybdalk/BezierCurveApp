@@ -128,6 +128,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 			clicked.y = e.getY()+YOFF;
 			int newX = clicked.x;
 			drawer.drawControlPoints();
+			drawer.drawSplinePoints();
 			drawer.drawCurve(drawer.controlPoints);
 			if(hasPolygon){
 				drawer.drawPolygon();
@@ -149,11 +150,11 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		}
 		//the point to be dragged
 		else if(!isDrawing && isEditing){
-			clicked = drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF);
+			clicked = drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF, drawer.controlPoints);
 		}
 		//remove a point
 		else if(!isDrawing && !isEditing){
-			clicked = drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF);
+			clicked = drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF, drawer.controlPoints);
 			drawer.removePoint(clicked);
 			if(hasPolygon){
 				drawer.drawPolygon();
@@ -207,7 +208,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		if(!isDrawing && drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF) != null){
+		if(!isDrawing && drawer.checkPoint(e.getX()+XOFF, e.getY()+YOFF, drawer.controlPoints) != null){
 			setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		}
 		else{

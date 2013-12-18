@@ -28,10 +28,11 @@ public class CurveDrawer {
 	ArrayList<Point> splinePoints;
 
 	ArrayList<Point> controlPoints; //controlpoints
-	ArrayList<Point> thePoints;		//line segment points
+	//ArrayList<Point> thePoints;		//line segment points
 	int[] binomial;
 	double t;
-	private int numPoints = 3;
+	private int numPoints = 4;
+
 	//double k = .01;
 
 	/**
@@ -51,6 +52,7 @@ public class CurveDrawer {
 
 		controlPoints = new ArrayList<Point>();
 		splinePoints = new ArrayList<Point>();
+//		thePoints = new ArrayList<Point>();
 	}
 
 
@@ -60,6 +62,18 @@ public class CurveDrawer {
 				frameBuffer.setRGB(i, j, white);
 			}
 		}
+		initSpline(numPoints);		
+		for(int i = 0; i<controlPoints.size()-1; i++){
+			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
+					controlPoints.get(i).y+HALFRADIUS, 
+					controlPoints.get(i+1).x+HALFRADIUS,
+					controlPoints.get(i+1).y+HALFRADIUS);
+		}	
+		drawControlPoints();
+		drawSplinePoints();
+		drawSpline();
+		
+
 	}
 
 	public void drawPoint(int x, int y){
@@ -83,7 +97,7 @@ public class CurveDrawer {
 	}
 
 	public void drawControlPoints(){
-		
+
 		for(Point P: controlPoints){
 			g2.setColor(Color.black);
 			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
@@ -91,7 +105,7 @@ public class CurveDrawer {
 
 	}
 	public void drawSplinePoints(){
-		for(Point P: thePoints){
+		for(Point P: splinePoints){
 			g2.setColor(Color.blue);
 			g2.fillRect(P.x,P.y,RADIUS,RADIUS);
 		}
@@ -100,12 +114,7 @@ public class CurveDrawer {
 
 	public void drawPolygon(){
 		g2.setColor(Color.BLACK);
-		reset();
-		Point a = new Point(50, 450);
-		Point b = new Point(800, 450);
-		drawSpline(a, b, numPoints);
-		drawControlPoints();
-		drawSplinePoints();
+		//reset();
 
 		for(int i = 0; i<controlPoints.size()-1; i++){
 			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
@@ -113,19 +122,7 @@ public class CurveDrawer {
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}	
-		//drawing the spline
-		//int temp = controlPoints.size() / numPoints;
-		System.out.println("control: " + controlPoints.toString());
-		//loop through controlPoints, adding in Points in blocks of n(numpoints) to splinePoints
-		for(int i = 0; i<controlPoints.size()-1; i+=numPoints){
-			//drawCurve(splinePoints);
-			for(int j = 0; j<numPoints+1; j++){
-				splinePoints.add(controlPoints.get(i+j)); 
-			}
-			drawCurve(splinePoints);
-		}
-		System.out.println("spline: " + splinePoints.toString());
-
+		drawSpline();
 	}
 
 	public void erasePolygon(){
@@ -171,20 +168,44 @@ public class CurveDrawer {
 	}
 
 	/*
-	 * Draws a bSpline from start to end, broken into n segments
+	 * Initializes the B-Spline with n subdivisions
 	 */
-	public void drawSpline(Point start, Point end, int n){
-		thePoints = new ArrayList<Point>();
+	public void initSpline(int n){
+		//draws a straight line from a-b then subdivides appropriately
+//		thePoints = new ArrayList<Point>();
+		Point start = new Point(50, 450);
+		Point end = new Point(800, 450);
+//		splinePoints = new ArrayList<Point>();
+
 		//divide line equally into n parts. length/n = lenght of each part
-		subDivide(start, end, n, thePoints);
+		subDivide(start, end, n, splinePoints);
 		//System.out.println("thePoints: " + thePoints.toString());
 		//create 4 control points for each segment
-		for(int i = 0; i<thePoints.size()-1; i++){
-			Point a = new Point(thePoints.get(i));		//start
-			Point b = new Point(thePoints.get(i+1));	//end
+		for(int i = 0; i<splinePoints.size()-1; i++){
+			Point a = new Point(splinePoints.get(i));		//start
+			Point b = new Point(splinePoints.get(i+1));	//end
 			subDivide(a, b, 3, controlPoints);
 		}
 		trim(controlPoints);
+		//drawing the spline (multiple bezier curves)
+		System.out.println("control: " + controlPoints.toString());
+	}
+	/*
+	 * Draws a bSpline from start to end, broken into n segments
+	 */
+	public void drawSpline(){
+		//splinePoints.clear();
+		//loop through controlPoints, adding in Points in blocks of n(numpoints) to splinePoints
+		for(int i = 0; i<controlPoints.size()-1; i+=numPoints){
+			for(int j = 0; j<numPoints+1; j++){
+				splinePoints.add(controlPoints.get(i+j)); 
+			}
+			//trim(splinePoints);
+			//draw a curve 
+			drawCurve(splinePoints);
+			splinePoints.clear();
+		}
+		System.out.println("spline: " + splinePoints.toString());
 		//System.out.println("controlpoints: " + controlPoints.toString());
 
 	}
@@ -192,7 +213,6 @@ public class CurveDrawer {
 	public void subDivide(Point a, Point b, int k, ArrayList<Point> output){
 		double length = distance(a.x, b.x, a.y, b.y);
 		double dist = length/k;
-		//thePoints = new ArrayList<Point>();
 		//add all subdivision points to array 
 		for(int i=0; i<=k; i++){
 			output.add(new Point((int)(a.x+i*dist), a.y));
@@ -268,16 +288,14 @@ public class CurveDrawer {
 	/*
 	 * checks to see if a given mouse click was on a point or not
 	 */
-	public Point checkPoint(int x, int y){
-		for(Point p : controlPoints){
+	public Point checkPoint(int x, int y, ArrayList<Point> theList){
+		for(Point p : theList){
 			if(distance(x,p.x,y,p.y) <= RADIUS){
 				return p;
 			}
 		}
 		return null;
 	}
-
-
 	/*
 	 * distance formula
 	 */
@@ -285,7 +303,6 @@ public class CurveDrawer {
 		double result = Math.sqrt((Math.pow((x2-x1), 2)) + (Math.pow(y1-y2, 2)));
 		return result;
 	}
-
 	/*
 	 * removes a control point and redraws the curve
 	 */
@@ -296,8 +313,8 @@ public class CurveDrawer {
 		canAddPoints = true;
 		drawControlPoints();
 		drawCurve(controlPoints);
+		drawSpline();
 	}
-
 	/*
 	 * erases the physical dot on the screen
 	 */
