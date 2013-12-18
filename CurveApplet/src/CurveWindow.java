@@ -19,12 +19,16 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 	private JButton clearButton;
 	private JRadioButton addPoints;
 	private JRadioButton removePoints;
-	private JRadioButton editPoints;
+	private JRadioButton movePoints;
 	private JCheckBox drawPoly;
+	
+	private JRadioButton bezierButton;
+	private JRadioButton bSplineButton;
 
 	private Boolean isDrawing;
 	private Boolean isEditing;
 	private Boolean isDragging;
+	private Boolean isBezier;
 	private Boolean hasPolygon;
 
 	private boolean bezier;
@@ -33,6 +37,9 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 	
 	private Point clicked;
 
+	private int width;
+	private int height;
+	
 	private int XOFF = -11;
 	private int YOFF = -34;
 
@@ -43,8 +50,11 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 	 */
 	public CurveWindow(int w, int h)
 	{
+		height = h;
+		width = w;
 
 		isDrawing = true;
+		isBezier = true;
 		isEditing = false;
 		isDragging = false;
 		hasPolygon = false;
@@ -61,23 +71,38 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		removePoints = new JRadioButton("Remove point");
 		removePoints.addActionListener(this);
 
-		editPoints = new JRadioButton("Edit point");
-		editPoints.addActionListener(this);
+		movePoints = new JRadioButton("Move point");
+		movePoints.addActionListener(this);
 
 		drawPoly = new JCheckBox("Draw Polygon");
 		drawPoly.addActionListener(this);
+		
+		bezierButton = new JRadioButton("Bezier Curve");
+		bezierButton.addActionListener(this);
+		bezierButton.setSelected(true);
 
-		/*groups radio buttons together*/
-		ButtonGroup group = new ButtonGroup();
-		group.add(addPoints);
-		group.add(removePoints);
-		group.add(editPoints);
+		bSplineButton = new JRadioButton("B-Spline");
+		bSplineButton.addActionListener(this);
+
+		/*groups editing radio buttons together*/
+		ButtonGroup editGroup = new ButtonGroup();
+		editGroup.add(addPoints);
+		editGroup.add(removePoints);
+		editGroup.add(movePoints);
+		
+		ButtonGroup modeGroup = new ButtonGroup();
+		modeGroup.add(bezierButton);
+		modeGroup.add(bSplineButton);
+		
+		
 
 		buttonPanel.add(clearButton);
 		buttonPanel.add(addPoints);
 		buttonPanel.add(removePoints);
-		buttonPanel.add(editPoints);
+		buttonPanel.add(movePoints);
 		buttonPanel.add(drawPoly);
+		buttonPanel.add(bezierButton);
+		buttonPanel.add(bSplineButton);
 		buttonPanel.setVisible(true);
 		drawer = new CurveDrawer(w,h);
 		JFrame frame = new JFrame("Curve Applet");
@@ -142,11 +167,13 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		//draw a new point
 		//if(drawer.canAddPoints){
 		if(isDrawing && drawer.canAddPoints){
+			if(e.getX()+XOFF < width && e.getY()+YOFF < height){
 			drawer.drawPoint(e.getX()+XOFF, e.getY()+YOFF);
 			if(hasPolygon){
 				drawer.drawPolygon();
 			}
 			repaint();
+			}
 		}
 		//the point to be dragged
 		else if(!isDrawing && isEditing){
@@ -185,7 +212,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 			isDrawing = true;
 			isEditing = false;
 		}
-		else if(e.getSource()==editPoints){
+		else if(e.getSource()==movePoints){
 			isDrawing = false;
 			isEditing = true;
 
@@ -201,6 +228,13 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 				drawer.drawPolygon();
 				repaint();
 			}
+		}
+		else if(e.getSource()==bezierButton){
+			isBezier = true;
+		}
+		else if(e.getSource() == bSplineButton){
+			isBezier = false;
+			drawer.constructNewSpline();
 		}
 
 

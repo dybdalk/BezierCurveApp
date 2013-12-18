@@ -62,6 +62,10 @@ public class CurveDrawer {
 				frameBuffer.setRGB(i, j, white);
 			}
 		}
+	}
+	
+	public void constructNewSpline(){
+		reset();
 		initSpline(numPoints);		
 		for(int i = 0; i<controlPoints.size()-1; i++){
 			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
@@ -72,8 +76,6 @@ public class CurveDrawer {
 		drawControlPoints();
 		drawSplinePoints();
 		drawSpline();
-		
-
 	}
 
 	public void drawPoint(int x, int y){
@@ -122,7 +124,7 @@ public class CurveDrawer {
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}	
-		drawSpline();
+//		drawSpline();
 	}
 
 	public void erasePolygon(){
