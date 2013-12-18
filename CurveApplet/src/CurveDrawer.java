@@ -73,7 +73,7 @@ public class CurveDrawer {
 			if(controlPoints.size() == 13){
 				canAddPoints = false;
 			}
-			drawAllPoints();
+			drawControlPoints();
 		}
 	}
 
@@ -82,16 +82,19 @@ public class CurveDrawer {
 		g2.fillOval(p.x,p.y,RADIUS,RADIUS);
 	}
 
-	public void drawAllPoints(){
-		for(Point P: thePoints){
-			g2.setColor(Color.blue);
-			g2.fillRect(P.x,P.y,RADIUS,RADIUS);
-		}
+	public void drawControlPoints(){
+		
 		for(Point P: controlPoints){
 			g2.setColor(Color.black);
 			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
 		}
 
+	}
+	public void drawSplinePoints(){
+		for(Point P: thePoints){
+			g2.setColor(Color.blue);
+			g2.fillRect(P.x,P.y,RADIUS,RADIUS);
+		}
 	}
 
 
@@ -101,14 +104,15 @@ public class CurveDrawer {
 		Point a = new Point(50, 450);
 		Point b = new Point(800, 450);
 		drawSpline(a, b, numPoints);
-		drawAllPoints();
+		drawControlPoints();
+		drawSplinePoints();
 
 		for(int i = 0; i<controlPoints.size()-1; i++){
 			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
 					controlPoints.get(i).y+HALFRADIUS, 
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
-		}
+		}	
 		//drawing the spline
 		//int temp = controlPoints.size() / numPoints;
 		System.out.println("control: " + controlPoints.toString());
@@ -132,7 +136,7 @@ public class CurveDrawer {
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}
-		drawAllPoints();
+		drawControlPoints();
 		drawCurve(controlPoints);
 	}
 
@@ -290,7 +294,7 @@ public class CurveDrawer {
 		controlPoints.remove(p);
 		controlPoints.trimToSize();
 		canAddPoints = true;
-		drawAllPoints();
+		drawControlPoints();
 		drawCurve(controlPoints);
 	}
 

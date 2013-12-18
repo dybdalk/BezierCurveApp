@@ -127,7 +127,7 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 			clicked.x = e.getX()+XOFF;
 			clicked.y = e.getY()+YOFF;
 			int newX = clicked.x;
-			drawer.drawAllPoints();
+			drawer.drawControlPoints();
 			drawer.drawCurve(drawer.controlPoints);
 			if(hasPolygon){
 				drawer.drawPolygon();
