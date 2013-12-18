@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.awt.event.*;
 import java.awt.image.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 
 public class CurveDrawer {
@@ -24,10 +25,13 @@ public class CurveDrawer {
 	private int xClicked;
 	private int yclicked;
 
+	ArrayList<Point> splinePoints;
 
-	ArrayList<Point> controlPoints;
+	ArrayList<Point> controlPoints; //controlpoints
+	ArrayList<Point> thePoints;		//line segment points
 	int[] binomial;
 	double t;
+	private int numPoints = 3;
 	//double k = .01;
 
 	/**
@@ -46,6 +50,7 @@ public class CurveDrawer {
 		canAddPoints = true;
 
 		controlPoints = new ArrayList<Point>();
+		splinePoints = new ArrayList<Point>();
 	}
 
 
@@ -63,7 +68,7 @@ public class CurveDrawer {
 			controlPoints.add(new Point(x, y));
 			//draw the curve affected by control points
 			if(controlPoints.size()>=2){
-				drawCurve();
+				drawCurve(controlPoints);
 			}
 			if(controlPoints.size() == 13){
 				canAddPoints = false;
@@ -78,21 +83,45 @@ public class CurveDrawer {
 	}
 
 	public void drawAllPoints(){
+		for(Point P: thePoints){
+			g2.setColor(Color.blue);
+			g2.fillRect(P.x,P.y,RADIUS,RADIUS);
+		}
 		for(Point P: controlPoints){
 			g2.setColor(Color.black);
 			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
 		}
+
 	}
 
 
 	public void drawPolygon(){
 		g2.setColor(Color.BLACK);
+		reset();
+		Point a = new Point(50, 450);
+		Point b = new Point(800, 450);
+		drawSpline(a, b, numPoints);
+		drawAllPoints();
+
 		for(int i = 0; i<controlPoints.size()-1; i++){
 			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
 					controlPoints.get(i).y+HALFRADIUS, 
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}
+		//drawing the spline
+		//int temp = controlPoints.size() / numPoints;
+		System.out.println("control: " + controlPoints.toString());
+		//loop through controlPoints, adding in Points in blocks of n(numpoints) to splinePoints
+		for(int i = 0; i<controlPoints.size()-1; i+=numPoints){
+			//drawCurve(splinePoints);
+			for(int j = 0; j<numPoints+1; j++){
+				splinePoints.add(controlPoints.get(i+j)); 
+			}
+			drawCurve(splinePoints);
+		}
+		System.out.println("spline: " + splinePoints.toString());
+
 	}
 
 	public void erasePolygon(){
@@ -103,28 +132,28 @@ public class CurveDrawer {
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}
-		drawCurve();
 		drawAllPoints();
+		drawCurve(controlPoints);
 	}
 
 	/*
-	 * draw curve based on control points
+	 * draw curve based on given array
 	 */
-	public void drawCurve(){
-		//generate formula based on controlPoints.size()
-		//binomial = getBinomialCoef(controlPoints.size());
+	public void drawCurve(ArrayList<Point> theList){
+		//generate formula based on theList.size()
+		//binomial = getBinomialCoef(theList.size());
 		double x1, y1, x2 = 0, y2 = 0;
-		x1 = controlPoints.get(0).x;
-		y1 = controlPoints.get(0).y;
+		x1 = theList.get(0).x;
+		y1 = theList.get(0).y;
 		for(double k=.025;k<=1.025;k+=.025){
 			//reset x2,y2
 			x2 = 0;
 			y2 = 0;
-			for(int i = 0; i <= controlPoints.size()-1; i++){
-				x2 += controlPoints.get(i).x * bernstein(k, controlPoints.size()-1, i);
-				y2 += controlPoints.get(i).y * bernstein(k, controlPoints.size()-1, i);
-				//				System.out.println("Bernstein x: " + bernstein(k, controlPoints.size()-1, i));
-				//				System.out.println("Bernstein y: " + bernstein(k, controlPoints.size()-1, i));
+			for(int i = 0; i <= theList.size()-1; i++){
+				x2 += theList.get(i).x * bernstein(k, theList.size()-1, i);
+				y2 += theList.get(i).y * bernstein(k, theList.size()-1, i);
+				//				System.out.println("Bernstein x: " + bernstein(k, theList.size()-1, i));
+				//				System.out.println("Bernstein y: " + bernstein(k, theList.size()-1, i));
 
 			}
 			//System.out.println(x2 + "," + y2);
@@ -138,8 +167,57 @@ public class CurveDrawer {
 	}
 
 	/*
-	 * calculate bernstein polynomial at position t
+	 * Draws a bSpline from start to end, broken into n segments
 	 */
+	public void drawSpline(Point start, Point end, int n){
+		thePoints = new ArrayList<Point>();
+		//divide line equally into n parts. length/n = lenght of each part
+		subDivide(start, end, n, thePoints);
+		//System.out.println("thePoints: " + thePoints.toString());
+		//create 4 control points for each segment
+		for(int i = 0; i<thePoints.size()-1; i++){
+			Point a = new Point(thePoints.get(i));		//start
+			Point b = new Point(thePoints.get(i+1));	//end
+			subDivide(a, b, 3, controlPoints);
+		}
+		trim(controlPoints);
+		//System.out.println("controlpoints: " + controlPoints.toString());
+
+	}
+	//subdivides line by given amount and stores in given array
+	public void subDivide(Point a, Point b, int k, ArrayList<Point> output){
+		double length = distance(a.x, b.x, a.y, b.y);
+		double dist = length/k;
+		//thePoints = new ArrayList<Point>();
+		//add all subdivision points to array 
+		for(int i=0; i<=k; i++){
+			output.add(new Point((int)(a.x+i*dist), a.y));
+		}
+	}
+	//sorts and trims an arraylist to having no duplicate entries
+	public ArrayList<Point> trim(ArrayList<Point> theList){
+		for(int i = 0; i<theList.size(); i++){
+			for(int j = i+1; j<theList.size(); j++){
+				//
+				if(theList.get(i).x>(theList.get(j).x)){
+					//swap if i > j 
+					Point temp = theList.get(i);		//temp = i
+					theList.set(i, theList.get(j));		//i = j
+					theList.set(j, temp);				//j = temp 
+				}
+				else if(theList.get(i).x==theList.get(j).x){
+					theList.remove(j);
+				}
+			}
+		}
+		return theList;
+	}
+
+	/** Math Things!
+	 */
+
+	// calculate bernstein polynomial at position t
+
 	public double bernstein(double n, int exp, int i){
 		return getBinomial(exp, i) * Math.pow(1-n, exp-i) * Math.pow(n,i) ;
 	}
@@ -152,24 +230,6 @@ public class CurveDrawer {
 		else if (k > n)  return 0;
 		else return (factorial(n) / (factorial(k) * factorial(n-k)));
 	}
-
-
-	//old version of calculating binomials
-	//	private int[] getBinomialCoef(int n){
-	//		int[] coefs = new int[n+1];
-	//
-	//		if(n == 1){
-	//			coefs[0]= 1;
-	//		}
-	//		else{
-	//			for(int i = 0; i<=n; i++){
-	//				int c = factorial(n)/(factorial(i)*(factorial(n-i)));
-	//				coefs[i]=c;
-	//			}
-	//		}
-	//		return coefs;
-	//	}
-
 
 	/*
 	 * simple factorial function
@@ -212,8 +272,8 @@ public class CurveDrawer {
 		}
 		return null;
 	}
-	
-	
+
+
 	/*
 	 * distance formula
 	 */
@@ -231,7 +291,7 @@ public class CurveDrawer {
 		controlPoints.trimToSize();
 		canAddPoints = true;
 		drawAllPoints();
-		drawCurve();
+		drawCurve(controlPoints);
 	}
 
 	/*

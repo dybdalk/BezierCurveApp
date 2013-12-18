@@ -27,6 +27,10 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 	private Boolean isDragging;
 	private Boolean hasPolygon;
 
+	private boolean bezier;
+	private boolean bSpline;
+	private boolean nurbs;
+	
 	private Point clicked;
 
 	private int XOFF = -11;
@@ -123,8 +127,8 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 			clicked.x = e.getX()+XOFF;
 			clicked.y = e.getY()+YOFF;
 			int newX = clicked.x;
-			drawer.drawCurve();
-			drawer.drawAllPoints();		
+			drawer.drawAllPoints();
+			drawer.drawCurve(drawer.controlPoints);
 			if(hasPolygon){
 				drawer.drawPolygon();
 			}
