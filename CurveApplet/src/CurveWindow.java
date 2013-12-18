@@ -231,10 +231,13 @@ public class CurveWindow extends JPanel implements MouseListener, MouseMotionLis
 		}
 		else if(e.getSource()==bezierButton){
 			isBezier = true;
+			drawer.reset();
+			repaint();
 		}
 		else if(e.getSource() == bSplineButton){
 			isBezier = false;
 			drawer.constructNewSpline();
+			repaint();
 		}
 
 

@@ -190,7 +190,7 @@ public class CurveDrawer {
 		}
 		trim(controlPoints);
 		//drawing the spline (multiple bezier curves)
-		System.out.println("control: " + controlPoints.toString());
+		//System.out.println("control: " + controlPoints.toString());
 	}
 	/*
 	 * Draws a bSpline from start to end, broken into n segments
