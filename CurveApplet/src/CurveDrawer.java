@@ -2,10 +2,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.event.*;
 import java.awt.image.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 
 public class CurveDrawer {
@@ -22,18 +20,14 @@ public class CurveDrawer {
 	private static final int RADIUS = 7;
 	private static final int HALFRADIUS = 3;
 
-	private int xClicked;
-	private int yclicked;
+
+	private Color currentColor;
 
 	ArrayList<Point> splinePoints;
 
 	ArrayList<Point> controlPoints; //controlpoints
 	//ArrayList<Point> thePoints;		//line segment points
 	int[] binomial;
-	double t;
-	private int numPoints = 4;
-
-	//double k = .01;
 
 	/**
 	 * draws Bezier curves
@@ -50,9 +44,9 @@ public class CurveDrawer {
 
 		canAddPoints = true;
 
+		currentColor = Color.RED; 
+
 		controlPoints = new ArrayList<Point>();
-		splinePoints = new ArrayList<Point>();
-//		thePoints = new ArrayList<Point>();
 	}
 
 
@@ -63,21 +57,7 @@ public class CurveDrawer {
 			}
 		}
 	}
-	
-	public void constructNewSpline(){
-		reset();
-		initSpline(numPoints);		
-		for(int i = 0; i<controlPoints.size()-1; i++){
-			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
-					controlPoints.get(i).y+HALFRADIUS, 
-					controlPoints.get(i+1).x+HALFRADIUS,
-					controlPoints.get(i+1).y+HALFRADIUS);
-		}	
-		drawControlPoints();
-		drawSplinePoints();
-		drawSpline();
-	}
-
+	//adds a point to controlPoints and redraws
 	public void drawPoint(int x, int y){
 		if(canAddPoints){
 			clear();
@@ -86,46 +66,37 @@ public class CurveDrawer {
 			if(controlPoints.size()>=2){
 				drawCurve(controlPoints);
 			}
+			//cap
 			if(controlPoints.size() == 13){
 				canAddPoints = false;
 			}
 			drawControlPoints();
 		}
 	}
-
+	//draws a point on canvas
 	public void drawPoint(Point p){
 		g2.setColor(Color.black);
 		g2.fillOval(p.x,p.y,RADIUS,RADIUS);
 	}
-
+	//draws controlPoints on canvas
 	public void drawControlPoints(){
-
 		for(Point P: controlPoints){
 			g2.setColor(Color.black);
 			g2.fillOval(P.x,P.y,RADIUS,RADIUS);
 		}
 
 	}
-	public void drawSplinePoints(){
-		for(Point P: splinePoints){
-			g2.setColor(Color.blue);
-			g2.fillRect(P.x,P.y,RADIUS,RADIUS);
-		}
-	}
-
-
+	//draws a line connecting each controlPoint
 	public void drawPolygon(){
 		g2.setColor(Color.BLACK);
-		//reset();
-
+		
 		for(int i = 0; i<controlPoints.size()-1; i++){
 			g2.drawLine(controlPoints.get(i).x+HALFRADIUS, 
 					controlPoints.get(i).y+HALFRADIUS, 
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}	
-//		drawSpline();
-	}
+		}
 
 	public void erasePolygon(){
 		g2.setColor(Color.white);
@@ -135,8 +106,8 @@ public class CurveDrawer {
 					controlPoints.get(i+1).x+HALFRADIUS,
 					controlPoints.get(i+1).y+HALFRADIUS);
 		}
-		drawControlPoints();
 		drawCurve(controlPoints);
+		drawControlPoints();
 	}
 
 	/*
@@ -144,7 +115,6 @@ public class CurveDrawer {
 	 */
 	public void drawCurve(ArrayList<Point> theList){
 		//generate formula based on theList.size()
-		//binomial = getBinomialCoef(theList.size());
 		double x1, y1, x2 = 0, y2 = 0;
 		x1 = theList.get(0).x;
 		y1 = theList.get(0).y;
@@ -155,101 +125,26 @@ public class CurveDrawer {
 			for(int i = 0; i <= theList.size()-1; i++){
 				x2 += theList.get(i).x * bernstein(k, theList.size()-1, i);
 				y2 += theList.get(i).y * bernstein(k, theList.size()-1, i);
-				//				System.out.println("Bernstein x: " + bernstein(k, theList.size()-1, i));
-				//				System.out.println("Bernstein y: " + bernstein(k, theList.size()-1, i));
-
 			}
-			//System.out.println(x2 + "," + y2);
-			g2.setColor(Color.CYAN);
+			g2.setColor(currentColor);
 			g2.drawLine((int)x1+HALFRADIUS,(int)y1+HALFRADIUS, (int)x2+HALFRADIUS, (int)y2+HALFRADIUS);
 			x1 = x2;
 			y1 = y2;
-			//System.out.println("From (" + (int)x1 + "," + (int)y1 + ")" + " To (" +(int) x2 + "," + (int)y2 + ")");
-			//			System.out.println("To (" +(int) x2 + "," + (int)y2 + ")");
+			
 		}
-	}
-
-	/*
-	 * Initializes the B-Spline with n subdivisions
-	 */
-	public void initSpline(int n){
-		//draws a straight line from a-b then subdivides appropriately
-//		thePoints = new ArrayList<Point>();
-		Point start = new Point(50, 450);
-		Point end = new Point(800, 450);
-//		splinePoints = new ArrayList<Point>();
-
-		//divide line equally into n parts. length/n = lenght of each part
-		subDivide(start, end, n, splinePoints);
-		//System.out.println("thePoints: " + thePoints.toString());
-		//create 4 control points for each segment
-		for(int i = 0; i<splinePoints.size()-1; i++){
-			Point a = new Point(splinePoints.get(i));		//start
-			Point b = new Point(splinePoints.get(i+1));	//end
-			subDivide(a, b, 3, controlPoints);
-		}
-		trim(controlPoints);
-		//drawing the spline (multiple bezier curves)
-		//System.out.println("control: " + controlPoints.toString());
-	}
-	/*
-	 * Draws a bSpline from start to end, broken into n segments
-	 */
-	public void drawSpline(){
-		//splinePoints.clear();
-		//loop through controlPoints, adding in Points in blocks of n(numpoints) to splinePoints
-		for(int i = 0; i<controlPoints.size()-1; i+=numPoints){
-			for(int j = 0; j<numPoints+1; j++){
-				splinePoints.add(controlPoints.get(i+j)); 
-			}
-			//trim(splinePoints);
-			//draw a curve 
-			drawCurve(splinePoints);
-			splinePoints.clear();
-		}
-		System.out.println("spline: " + splinePoints.toString());
-		//System.out.println("controlpoints: " + controlPoints.toString());
-
-	}
-	//subdivides line by given amount and stores in given array
-	public void subDivide(Point a, Point b, int k, ArrayList<Point> output){
-		double length = distance(a.x, b.x, a.y, b.y);
-		double dist = length/k;
-		//add all subdivision points to array 
-		for(int i=0; i<=k; i++){
-			output.add(new Point((int)(a.x+i*dist), a.y));
-		}
-	}
-	//sorts and trims an arraylist to having no duplicate entries
-	public ArrayList<Point> trim(ArrayList<Point> theList){
-		for(int i = 0; i<theList.size(); i++){
-			for(int j = i+1; j<theList.size(); j++){
-				//
-				if(theList.get(i).x>(theList.get(j).x)){
-					//swap if i > j 
-					Point temp = theList.get(i);		//temp = i
-					theList.set(i, theList.get(j));		//i = j
-					theList.set(j, temp);				//j = temp 
-				}
-				else if(theList.get(i).x==theList.get(j).x){
-					theList.remove(j);
-				}
-			}
-		}
-		return theList;
 	}
 
 	/** Math Things!
 	 */
 
-	// calculate bernstein polynomial at position t
+	// calculate bernstein polynomial at given position
 
 	public double bernstein(double n, int exp, int i){
 		return getBinomial(exp, i) * Math.pow(1-n, exp-i) * Math.pow(n,i) ;
 	}
 
 	/*
-	 * n choose k, binomial coefficients
+	 * n choose k
 	 */
 	private int getBinomial(int n, int k){
 		if (k < 0)  return 0;
@@ -315,7 +210,6 @@ public class CurveDrawer {
 		canAddPoints = true;
 		drawControlPoints();
 		drawCurve(controlPoints);
-		drawSpline();
 	}
 	/*
 	 * erases the physical dot on the screen
@@ -323,6 +217,34 @@ public class CurveDrawer {
 	public void erasePoint(Point p){
 		g2.setColor(Color.white);
 		g2.fillOval(p.x,p.y,RADIUS,RADIUS);
+	}
+	//color options
+	public void setColor(String s){
+		if(s.equals("Red")){
+			currentColor = Color.RED;
+		}
+		else if(s.equals("Blue")){
+			currentColor = Color.BLUE;
+		}
+		else if(s.equals("Green")){
+			currentColor = Color.GREEN;
+		}
+		else if(s.equals("Magenta")){
+			currentColor = Color.MAGENTA;
+		}
+		else if(s.equals("Cyan")){
+			currentColor = Color.CYAN;
+		}
+		else if(s.equals("Black")){
+			currentColor = Color.BLACK;
+		}
+
+		if(controlPoints.size()>0){
+			if(controlPoints.size()>1){
+				drawCurve(controlPoints);
+			}
+			drawControlPoints();
+		}
 	}
 
 	/**
